@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Typing Speed Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+    }
+
+    .sentence {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+
+    .highlight {
+      color: red;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      margin-bottom: 1rem;
+    }
+
+    .buttons {
+      margin-bottom: 1rem;
+    }
+
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      margin: 0 0.5rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .start {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .finish {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .results {
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+
+    .timer {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #555;
+    }
+
+    @media (max-width: 600px) {
+      .sentence {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Typing Speed Test</h1>
+    <div class="timer" id="timer">Time: 0.0s</div>
+    <div class="sentence" id="sentence"></div>
+    <input type="text" id="input" placeholder="Start typing..." disabled />
+    <div class="buttons">
+      <button class="start" onclick="startTest()">Start</button>
+      <button class="finish" onclick="finishTest()">Finish</button>
+      <button onclick="resetTest()">Try Again</button>
+    </div>
+    <div class="results" id="results"></div>
+  </div>
+
+  <script>
+    const sentences = [
+      "The quick brown fox jumps over the lazy dog.",
+      "Typing fast is a useful skill for programmers.",
+      "Practice makes perfect when learning to type.",
+      "Speed and accuracy are both important in typing tests.",
+      "JavaScript powers many interactive web applications."
+    ];
+
+    let currentSentence = "";
+    let startTime = 0;
+    let timerInterval = null;
+
+    const sentenceEl = document.getElementById("sentence");
+    const inputEl = document.getElementById("input");
+    const resultsEl = document.getElementById("results");
+    const timerEl = document.getElementById("timer");
+
+    function getRandomSentence() {
+      return sentences[Math.floor(Math.random() * sentences.length)];
+    }
+
+    function startTest() {
+      currentSentence = getRandomSentence();
+      sentenceEl.textContent = currentSentence;
+      inputEl.value = "";
+      inputEl.disabled = false;
+      inputEl.focus();
+      resultsEl.textContent = "";
+      startTime = new Date().getTime();
+      timerEl.textContent = "Time: 0.0s";
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        const elapsed = ((new Date().getTime() - startTime) / 1000).toFixed(1);
+        timerEl.textContent = `Time: ${elapsed}s`;
+        highlightInput();
+      }, 100);
+
+      inputEl.addEventListener("input", highlightInput);
+    }
+
+    function finishTest() {
+      clearInterval(timerInterval);
+      inputEl.disabled = true;
+      const timeTaken = (new Date().getTime() - startTime) / 1000;
+      const typedText = inputEl.value;
+
+      const wordsTyped = typedText.trim().split(/\s+/).length;
+      const wpm = Math.round((wordsTyped / timeTaken) * 60);
+
+      let correctChars = 0;
+      const minLength = Math.min(typedText.length, currentSentence.length);
+      for (let i = 0; i < minLength; i++) {
+        if (typedText[i] === currentSentence[i]) {
+          correctChars++;
+        }
+      }
+      const accuracy = ((correctChars / currentSentence.length) * 100).toFixed(1);
+
+      resultsEl.innerHTML = `
+        <strong>Results:</strong><br/>
+        Time Taken: ${timeTaken.toFixed(1)}s<br/>
+        Words Per Minute: ${wpm}<br/>
+        Accuracy: ${accuracy}%
+      `;
+    }
+
+    function highlightInput() {
+      const typed = inputEl.value;
+      let display = "";
+      for (let i = 0; i < currentSentence.length; i++) {
+        if (!typed[i]) {
+          display += currentSentence[i];
+        } else if (typed[i] === currentSentence[i]) {
+          display += `<span>${currentSentence[i]}</span>`;
+        } else {
+          display += `<span class="highlight">${currentSentence[i]}</span>`;
+        }
+      }
+      sentenceEl.innerHTML = display;
+
+      if (typed === currentSentence) {
+        finishTest();
+      }
+    }
+
+    function resetTest() {
+      clearInterval(timerInterval);
+      sentenceEl.textContent = "";
+      inputEl.value = "";
+      inputEl.disabled = true;
+      resultsEl.textContent = "";
+      timerEl.textContent = "Time: 0.0s";
+    }
+  </script>
+</body>
+</html>
